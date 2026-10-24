@@ -24,18 +24,18 @@ func statsCard(p *profile) []byte {
 		label string
 		value int
 	}{
-		{"Total Stars Earned:", p.Stars},
 		{"Total Commits (last year):", p.Commits},
 		{"Total PRs:", p.PRs},
 		{"Total Issues:", p.Issues},
 		{"Contributed to (last year):", p.ContributedTo},
 	}
+	height := 45 + (len(rows)+1)*25 // as github-readme-stats sizes it
 	var b strings.Builder
 	for i, r := range rows {
 		fmt.Fprintf(&b, `<g transform="translate(0, %d)"><g class="stagger" style="animation-delay: %dms" transform="translate(25, 0)"><svg data-testid="icon" class="icon" viewBox="0 0 16 16" version="1.1" width="16" height="16"><path fill-rule="evenodd" d="%s"/></svg><text class="stat bold" x="25" y="12.5">%s</text><text class="stat bold" x="219.01" y="12.5">%d</text></g></g>`,
-			i*25, 450+i*150, statIcons[i], esc(r.label), r.value)
+			i*25, 450+i*150, statIcons[i+1], esc(r.label), r.value)
 	}
-	return []byte(fmt.Sprintf(`<svg width="467" height="195" viewBox="0 0 467 195" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="%s">
+	return []byte(fmt.Sprintf(`<svg width="467" height="%d" viewBox="0 0 467 %d" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="%s">
 <title>%s</title>
 <style>
 .header{font:600 18px 'Segoe UI',Ubuntu,Sans-Serif;fill:%s;animation:fadeInAnimation .8s ease-in-out forwards}
@@ -55,11 +55,11 @@ func statsCard(p *profile) []byte {
 <rect x="0.5" y="0.5" rx="4.5" height="99%%" width="466" fill="%s" stroke-opacity="0"/>
 <g transform="translate(25, 35)"><text x="0" y="0" class="header">%s</text></g>
 <g transform="translate(0, 55)">
-<g transform="translate(390.5, 47.5)"><circle class="rank-circle-rim" cx="-10" cy="8" r="40"/><circle class="rank-circle" cx="-10" cy="8" r="40"/><g class="rank-text"><text x="-5" y="3" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">%s</text></g></g>
+<g transform="translate(390.5, %.1f)"><circle class="rank-circle-rim" cx="-10" cy="8" r="40"/><circle class="rank-circle" cx="-10" cy="8" r="40"/><g class="rank-text"><text x="-5" y="3" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">%s</text></g></g>
 <svg x="0" y="0">%s</svg>
 </g></svg>`,
-		esc(p.Name+"'s GitHub Stats, Rank: "+level), esc(p.Name+"'s GitHub Stats, Rank: "+level),
-		accent, accent, accent, accent, circ, offset, cardBG, esc(p.Name+"'s GitHub Stats"), esc(level), b.String()))
+		height, height, esc(p.Name+"'s GitHub Stats, Rank: "+level), esc(p.Name+"'s GitHub Stats, Rank: "+level),
+		accent, accent, accent, accent, circ, offset, cardBG, esc(p.Name+"'s GitHub Stats"), float64(height)/2-50, esc(level), b.String()))
 }
 
 func langsCard(langs []lang) []byte {

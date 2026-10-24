@@ -81,10 +81,13 @@ func TestCards(t *testing.T) {
 	h := newTestServer(gh).routes()
 
 	code, body := get(t, h, "/stats.svg")
-	for _, want := range []string{"Test &lt;User&gt;&#39;s GitHub Stats", ">426<", ">8<", ">1<", ">4<", "C+"} {
+	for _, want := range []string{"Test &lt;User&gt;&#39;s GitHub Stats", ">426<", ">8<", ">1<", ">4<", "C+", `height="170"`} {
 		if code != 200 || !strings.Contains(body, want) {
 			t.Fatalf("stats should contain %q: %d\n%s", want, code, body)
 		}
+	}
+	if strings.Contains(body, "Stars Earned") {
+		t.Error("the stars row should be gone")
 	}
 	wellFormed(t, body)
 
