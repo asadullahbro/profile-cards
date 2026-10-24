@@ -27,60 +27,6 @@ const style = `<style>
 text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace}
 </style>`
 
-func langColor(name string) string {
-	switch name {
-	case "Go":
-		return "#00ADD8"
-	case "JavaScript":
-		return "#F7DF1E"
-	case "TypeScript":
-		return "#3178C6"
-	case "Python":
-		return "#3776AB"
-	case "Kotlin":
-		return "#7F52FF"
-	case "Shell":
-		return "#89E051"
-	case "HTML":
-		return "#E34C26"
-	}
-	return "#8b949e"
-}
-
-type row struct {
-	label string
-	pct   float64
-	color string
-}
-
-func card(w, h int, title, body string) []byte {
-	return []byte(fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d" role="img" aria-label="%s">%s
-<rect x="0.5" y="0.5" width="%d" height="%d" rx="8" fill="var(--bg)" stroke="var(--line)"/>
-<text x="20" y="32" font-size="15" font-weight="700" fill="var(--accent)">%s</text>%s</svg>`,
-		w, h, w, h, esc(title), style, w-1, h-1, esc(title), body))
-}
-
-func statsSVG(user string, items [][2]string) []byte {
-	var b strings.Builder
-	for i, it := range items {
-		y := 62 + i*26
-		fmt.Fprintf(&b, `<text x="20" y="%d" font-size="13" fill="var(--muted)">%s</text><text x="275" y="%d" font-size="13" font-weight="700" fill="var(--fg)" text-anchor="end">%s</text>`,
-			y, esc(it[0]), y, esc(it[1]))
-	}
-	return card(295, 62+len(items)*26, user+" on GitHub", b.String())
-}
-
-func langsSVG(title string, rows []row) []byte {
-	var b strings.Builder
-	for i, r := range rows {
-		y := 56 + i*30
-		fmt.Fprintf(&b, `<text x="20" y="%d" font-size="12" fill="var(--fg)">%s</text><text x="275" y="%d" font-size="12" fill="var(--muted)" text-anchor="end">%.0f%%</text>`+
-			`<rect x="20" y="%d" width="255" height="6" rx="3" fill="var(--line)"/><rect x="20" y="%d" width="%.1f" height="6" rx="3" fill="%s"/>`,
-			y, esc(r.label), y, r.pct*100, y+6, y+6, 255*r.pct, r.color)
-	}
-	return card(295, 56+len(rows)*30, title, b.String())
-}
-
 // typingSVG types each line out, holds it, erases it, then moves to the next,
 // all in SMIL, which GitHub shows in README images.
 func typingSVG(lines []string, width int) []byte {
