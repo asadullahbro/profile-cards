@@ -1,0 +1,50 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  packages: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        id: build
+        run: |
+          IMAGE=ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker build -t $IMAGE:${{ github.sha }} .
+          docker push $IMAGE:${{ github.sha }}
+          echo "image=$IMAGE:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Get OIDC token
+        id: oidc
+        run: |
+          TOKEN=$(curl -sSL \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            -H "Accept: application/json; api-version=2.0" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://hub.asdl.website" \
+            | jq -r '.value')
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Deploy to ASDL Hub
+        run: |
+          curl -sSf -X POST https://hub.asdl.website/api/v1/deploy \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"oidc_token\": \"${{ steps.oidc.outputs.token }}\",
+              \"image\": \"${{ steps.build.outputs.image }}\"
+            }"
